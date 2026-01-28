@@ -8,7 +8,7 @@ pipeline {
     // Define Docker Hub credentials ID created in Jenkins
     environment {
         DOCKERHUB_CREDENTIALS = 'docker-hub-credentials'
-        IMAGE_NAME = 'your-dockerhub-username/your-app-name'
+        IMAGE_NAME = 'melodion/bible'
     }
     stages {
 
