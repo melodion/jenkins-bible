@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+          image 'maven:3.9.9-eclipse-temurin-21'
+          args '-v /root/.m2:/root/.m2'
+        }
+      }
     // Define Docker Hub credentials ID created in Jenkins
     environment {
         DOCKERHUB_CREDENTIALS = 'docker-hub-credentials'
