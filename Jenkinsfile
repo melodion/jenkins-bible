@@ -1,59 +1,62 @@
 pipeline {
-    agent {
-        docker {
-          image 'maven:3.9.9-eclipse-temurin-21'
-          args '-v /root/.m2:/root/.m2'
-        }
-      }
-    // Define Docker Hub credentials ID created in Jenkins
+    agent none   // ⬅️ PENTING!!!
+
     environment {
-        DOCKERHUB_CREDENTIALS = 'docker-hub-credentials'
-        IMAGE_NAME = 'melodion/bible'
+        APP_NAME = 'spring-apps'
+        IMAGE_NAME = 'melodion/bible:latest'
     }
+
     stages {
 
         stage('Checkout') {
-          steps {
-            checkout scm
-          }
+            agent any
+            steps {
+                checkout scm
+            }
         }
 
         stage('Build Maven') {
-          steps {
-            sh 'mvn clean package -DskipTests'
-          }
+            agent {
+                docker {
+                    image 'maven:3.9.9-eclipse-temurin-21'
+                    args '-v /root/.m2:/root/.m2'
+                }
+            }
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
         }
 
         stage('Build Docker Image') {
-          agent any
-          steps {
-            sh '''
-              docker build -t ${IMAGE_NAME} .
-            '''
-          }
+            agent any
+            steps {
+                sh '''
+                  docker build -t ${IMAGE_NAME} .
+                '''
+            }
         }
 
         stage('Run Container') {
-          agent any
-          steps {
-            sh '''
-              docker stop ${APP_NAME} || true
-              docker rm ${APP_NAME} || true
-              docker run -d \
-                --name ${APP_NAME} \
-                -p 8081:8081 \
-                ${IMAGE_NAME}
-            '''
-          }
+            agent any
+            steps {
+                sh '''
+                  docker stop ${APP_NAME} || true
+                  docker rm ${APP_NAME} || true
+                  docker run -d \
+                    --name ${APP_NAME} \
+                    -p 8081:8080 \
+                    ${IMAGE_NAME}
+                '''
+            }
         }
-      }
+    }
 
-      post {
+    post {
         success {
-          echo '✅ Build & Deploy sukses'
+            echo '✅ Build & Deploy sukses'
         }
         failure {
-          echo '❌ Build gagal'
+            echo '❌ Build gagal'
         }
-      }
     }
+}
